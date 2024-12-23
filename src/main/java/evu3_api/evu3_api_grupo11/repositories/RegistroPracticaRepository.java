@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 import evu3_api.evu3_api_grupo11.models.RegistroPractica;
 
 @Repository
-public interface RegistroPracticaRepository extends JpaRepository<RegistroPractica, Long> {}
+public interface RegistroPracticaRepository extends JpaRepository<RegistroPractica, Long> {
+    void deleteAllByPracticaId(Long practicaId);
+}

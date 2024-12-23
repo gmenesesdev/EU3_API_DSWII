@@ -7,9 +7,11 @@ import evu3_api.evu3_api_grupo11.models.Practica;
 import evu3_api.evu3_api_grupo11.responses.PracticaRequest;
 import evu3_api.evu3_api_grupo11.responses.PracticaResponse;
 import evu3_api.evu3_api_grupo11.responses.PracticaUpdateRequest;
+import jakarta.transaction.Transactional;
 import evu3_api.evu3_api_grupo11.repositories.EmpresaRepository;
 import evu3_api.evu3_api_grupo11.repositories.EstudianteRepository;
 import evu3_api.evu3_api_grupo11.repositories.PracticaRepository;
+import evu3_api.evu3_api_grupo11.repositories.RegistroPracticaRepository;
 import evu3_api.evu3_api_grupo11.repositories.jefeDirectoRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,9 @@ public class PracticaService {
 
     @Autowired
     private jefeDirectoRepository jefeDirectoRepository;
+
+    @Autowired
+    private RegistroPracticaRepository registroPracticaRepository;
 
     public List<PracticaResponse> getAllPracticas() {
         return practicaRepository.findAll().stream().map(prac -> new PracticaResponse(
@@ -125,11 +130,16 @@ public class PracticaService {
                 updatedPractica.getJefeDirecto().getNombre());
     }
 
+    @Transactional
     public void deletePractica(Long id) {
-        // Verifica que la práctica exista antes de eliminarla
-        if (!practicaRepository.existsById(id)) {
-            throw new RuntimeException("Práctica no encontrada");
-        }
+        // Verifica si la práctica existe
+        Practica practica = practicaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Práctica no encontrada"));
+
+        // Elimina los registros asociados a esta práctica
+        registroPracticaRepository.deleteAllByPracticaId(practica.getId());
+
+        // Elimina la práctica
         practicaRepository.deleteById(id);
     }
 }
